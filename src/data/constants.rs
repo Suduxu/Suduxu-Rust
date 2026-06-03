@@ -1,0 +1,1 @@
+pub const ADAPTER_PREFIX: &str = "[SDX]:";

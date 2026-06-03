@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
 use ctrlc::set_handler;
-use suduxu_rust::api::handler::suduxu::{addresses, config, find_all_clients, find_client_by_id, for_client, init_suduxu, launch_suduxu, password, stop_suduxu, ON_CLIENT_CONNECTED, ON_CLIENT_DISCONNECTED};
+use suduxu_rust::api::handler::suduxu::{addresses, config, for_client, init_suduxu, launch_suduxu, password, stop_suduxu, ON_CLIENT_CONNECTED, ON_CLIENT_DISCONNECTED};
 use suduxu_rust::data::config::SuduxuBehaviourConfiguration;
 use suduxu_rust::data::log::LogLevel;
 use suduxu_rust::data::network::{VibrationStrength, VibrationType};

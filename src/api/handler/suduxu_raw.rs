@@ -41,7 +41,7 @@ pub struct SuduxuRaw {
 }
 
 impl SuduxuRaw {
-    pub unsafe fn load(config: SuduxuBehaviourConfiguration) -> Result<Self, libloading::Error> {
+    pub unsafe fn load(config: SuduxuBehaviourConfiguration) -> Result<Arc<Self>, libloading::Error> {
         unsafe {
             if SUDUXU_RAW.get().is_some() {
                 panic!("SuduxuRaw already initialized");
@@ -83,7 +83,9 @@ impl SuduxuRaw {
                 _lib: lib,
             };
 
-            Ok(raw)
+            SUDUXU_RAW.set(Arc::new(raw)).expect("Failed to set SuduxuRaw instance");
+
+            Ok(SUDUXU_RAW.get().unwrap().clone())
         }
     }
 
@@ -92,13 +94,7 @@ impl SuduxuRaw {
             raw.clone()
         } else {
             unsafe {
-                let raw = Self::load(SuduxuBehaviourConfiguration::default());
-
-                if let Err(e) = raw {
-                    panic!("Failed to load SuduxuRaw: {}", e);
-                } else {
-                    SUDUXU_RAW.set(Arc::new(raw.unwrap())).expect("Failed to set SuduxuRaw instance");
-                }
+                Self::load(SuduxuBehaviourConfiguration::default()).expect("Failed to load SuduxuRaw");
             }
 
             SUDUXU_RAW.get().unwrap().clone()

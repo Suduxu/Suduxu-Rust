@@ -8,7 +8,7 @@ use crate::data::network::{AddressObject, Payload};
 use crate::data::status::FFIError;
 use crate::event::{EventBus, EventObject};
 use serde::de::DeserializeOwned;
-use std::ffi::c_char;
+use std::ffi::{c_char, CStr};
 use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::thread;
 use std::thread::JoinHandle;
@@ -150,14 +150,18 @@ pub fn find_all_clients() -> Vec<SuduxuDevice> {
 pub fn find_client_by_id(id: u16) -> Option<SuduxuDevice> {
     let json_ptr = unsafe { (SuduxuRaw::instance().find_client_by_id)(id) };
 
-    if json_ptr.is_null()
-        || unsafe {
-            std::ffi::CStr::from_ptr(json_ptr)
-                .to_str()
-                .unwrap_or_default()
-                == "null"
+    if json_ptr.is_null() {
+        return None;
+    }
+    
+    let is_null = unsafe {
+        CStr::from_ptr(json_ptr).to_str().unwrap_or_default() == "null"
+    };
+    
+    if is_null {
+        unsafe {
+            (SuduxuRaw::instance().free)(json_ptr);
         }
-    {
         return None;
     }
 
@@ -196,7 +200,7 @@ pub fn addresses() -> Arc<AddressObject> {
     SUDUXU_ADDRESSES.get().unwrap().clone()
 }
 
-fn read_json<T: DeserializeOwned>(json_ptr: *const c_char) -> T {
+fn read_json<T: DeserializeOwned>(json_ptr: *mut c_char) -> T {
     if json_ptr.is_null() {
         panic!("Received null pointer for JSON data");
     }
@@ -205,9 +209,12 @@ fn read_json<T: DeserializeOwned>(json_ptr: *const c_char) -> T {
         std::ffi::CStr::from_ptr(json_ptr)
             .to_str()
             .unwrap_or_default()
+            .to_owned()
     };
 
-    serde_json::from_str(json_str).unwrap_or_else(|e| {
+    unsafe { (SuduxuRaw::instance().free)(json_ptr) };
+
+    serde_json::from_str(&json_str).unwrap_or_else(|e| {
         panic!("Failed to parse JSON data: {:?}\nData: {}", e, json_str);
     })
 }
@@ -223,7 +230,10 @@ unsafe extern "C" fn on_event(event_data: *const c_char) {
             .unwrap_or_default()
     };
 
-    let event_object: EventObject = serde_json::from_str(json).unwrap();
+    let event_object: EventObject = match serde_json::from_str(json) {
+        Ok(v) => v,
+        Err(_) => return,
+    };
 
     match event_object.r#type() {
         "Log" => {
@@ -270,10 +280,14 @@ fn handle_tcp(evt: EventObject) {
             ON_CLIENT_DISCONNECTED.publish(id);
         }
         3 => {
-            ON_ERROR.publish(get_value(&evt, "message"));
+            if let Some(message) = get_value::<String>(&evt, "message") {
+                ON_ERROR.publish(message);
+            }
         }
         4 => {
-            ON_ILLEGAL_SUDUXU_METHOD.publish(get_value(&evt, "payload"));
+            if let Some(payload) = get_value::<Payload>(&evt, "payload") {
+                ON_ILLEGAL_SUDUXU_METHOD.publish(payload);
+            }
         }
         _ => {}
     }
@@ -285,22 +299,29 @@ fn handle_udp(evt: EventObject) {
             ON_UDP_START.publish(());
         }
         1 => {
-            let id = get_id(&evt);
-
-            ON_BUTTON_INPUT.publish((id, get_value::<ButtonInput>(&evt, "input")));
+            if let Some(input) = get_value::<ButtonInput>(&evt, "input") {
+                let id = get_id(&evt);
+                ON_BUTTON_INPUT.publish((id, input));
+            }
         }
         2 => {
             ON_UDP_STOP.publish(());
         }
         3 => {
-            let id = get_id(&evt);
+            if let Some(data) = get_value::<JoystickData>(&evt, "type") {
+                let id = get_id(&evt);
+                
+                ON_JOYSTICK_DATA.publish((id, data));
+            }
 
-            ON_JOYSTICK_DATA.publish((id, get_value::<JoystickData>(&evt, "type")));
         }
         4 => {
-            let id = get_id(&evt);
+            if let Some(path) = get_value::<String>(&evt, "path") {
+                let id = get_id(&evt);
+                
+                ON_SCREENSHOT.publish((id, path));
+            }
 
-            ON_SCREENSHOT.publish((id, get_value::<String>(&evt, "path")));
         }
         _ => {}
     }
@@ -311,10 +332,15 @@ fn handle_state(evt: EventObject) {
 
     match evt.kind() {
         0 => {
-            ON_BATTERY_CHANGE.publish((id, get_value(&evt, "battery")));
+            if let Some(battery) = get_value::<Battery>(&evt, "battery") {
+                ON_BATTERY_CHANGE.publish((id, battery));
+            }
         }
         1 => {
-            ON_NETWORK_CHANGE.publish((id, get_value(&evt, "network")));
+            if let Some(network) = get_value::<Network>(&evt, "network") {
+                ON_NETWORK_CHANGE.publish((id, network));
+            }
+            
         }
         _ => {}
     }
@@ -342,9 +368,9 @@ fn handle_health(evt: EventObject) {
 }
 
 fn get_id(evt: &EventObject) -> u16 {
-    evt.value().get("id").and_then(|v| v.as_u64()).unwrap() as u16
+    evt.value().get("id").and_then(|v| v.as_u64()).unwrap_or(0) as u16
 }
 
-fn get_value<T: DeserializeOwned>(evt: &EventObject, key: &str) -> T {
-    serde_json::from_value::<T>(evt.value().get(key).unwrap().clone()).unwrap()
+fn get_value<T: DeserializeOwned>(evt: &EventObject, key: &str) -> Option<T> {
+    serde_json::from_value::<T>(evt.value().get(key).unwrap().clone()).ok()
 }

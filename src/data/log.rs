@@ -59,7 +59,7 @@ pub struct LogObject {
 impl LogObject {
     pub fn new(title: Option<String>, message: String, level: LogLevel) -> Self {
         LogObject {
-            title: title.map(|s| s.to_string()),
+            title,
             message,
             level,
         }

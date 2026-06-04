@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::sync::{Arc, Mutex};
 
-type Subscriber<T> = Box<dyn Fn(T) + Send + Sync>;
+type Subscriber<T> = Arc<dyn Fn(T) + Send + Sync>;
 
 #[derive(Clone)]
 pub struct EventBus<T>
@@ -12,7 +14,7 @@ where
 
 impl<T: Clone> EventBus<T> {
     pub fn new() -> Self {
-        EventBus {
+        Self {
             subscribers: Arc::new(Mutex::new(Vec::new())),
         }
     }
@@ -22,34 +24,28 @@ impl<T: Clone> EventBus<T> {
         F: Fn(T) + Send + Sync + 'static,
     {
         let mut subs = self.subscribers.lock().unwrap();
-        subs.push(Box::new(callback));
+        subs.push(Arc::new(callback));
     }
 
     pub fn publish(&self, event: T) {
-        if let Ok(subs) = self.subscribers.lock() {
-            for cb in subs.iter() {
-                cb(event.clone());
-            }
+        let callbacks = {
+            let subs = self.subscribers.lock().unwrap();
+            subs.clone()
+        };
+
+        for cb in callbacks {
+            cb(event.clone());
         }
     }
 
     pub fn clear_subscribers(&self) {
-        if let Ok(mut subs) = self.subscribers.lock() {
-            subs.clear();
-        }
+        self.subscribers.lock().unwrap().clear();
     }
 
     pub fn subscriber_count(&self) -> usize {
-        if let Ok(subs) = self.subscribers.lock() {
-            subs.len()
-        } else {
-            0
-        }
+        self.subscribers.lock().unwrap().len()
     }
 }
-
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct EventObject {

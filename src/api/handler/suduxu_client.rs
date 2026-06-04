@@ -61,15 +61,13 @@ impl SuduxuClient {
         unsafe {
             let json = serde_json::to_string(&payload).unwrap();
             let c_string = std::ffi::CString::new(json).unwrap();
-            let ptr = c_string.into_raw();
+            let ptr = c_string.as_ptr();
 
             if self.id == 0 {
                 (self.raw.broadcast)(ptr);
             } else {
                 (self.raw.unicast)(self.id, ptr);
             }
-
-            (self.raw.free)(ptr);
         }
     }
 

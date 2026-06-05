@@ -13,6 +13,7 @@ use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
+use crate::data::qr::{QrCode, QrResult};
 
 // ------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------
@@ -160,7 +161,7 @@ pub fn find_client_by_id(id: u16) -> Option<SuduxuDevice> {
     
     if is_null {
         unsafe {
-            (SuduxuRaw::instance().free)(json_ptr);
+            (SuduxuRaw::instance().suduxu_free)(json_ptr);
         }
         return None;
     }
@@ -196,6 +197,18 @@ pub fn password() -> Option<u32> {
     config().security.password
 }
 
+pub fn qr() -> QrCode {
+    unsafe {
+        let result = (SuduxuRaw::instance().get_qr_code_rendered)();
+
+        let pixels = std::slice::from_raw_parts(result.ptr, result.size as usize).to_vec();
+
+        (SuduxuRaw::instance().free_qr_buffer)(result.ptr, result.size as usize);
+
+        QrCode { pixels, width: result.width }
+    }
+}
+
 pub fn addresses() -> Arc<AddressObject> {
     SUDUXU_ADDRESSES.get().unwrap().clone()
 }
@@ -206,13 +219,13 @@ fn read_json<T: DeserializeOwned>(json_ptr: *mut c_char) -> T {
     }
 
     let json_str = unsafe {
-        std::ffi::CStr::from_ptr(json_ptr)
+        CStr::from_ptr(json_ptr)
             .to_str()
             .unwrap_or_default()
             .to_owned()
     };
 
-    unsafe { (SuduxuRaw::instance().free)(json_ptr) };
+    unsafe { (SuduxuRaw::instance().suduxu_free)(json_ptr) };
 
     serde_json::from_str(&json_str).unwrap_or_else(|e| {
         panic!("Failed to parse JSON data: {:?}\nData: {}", e, json_str);

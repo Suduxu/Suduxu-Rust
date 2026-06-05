@@ -1,6 +1,6 @@
 use std::sync::{Arc, OnceLock};
 use libloading::Library;
-use crate::api::handler::types::{AddressesFn, BroadcastFn, ConfigFn, DisconnectAllFn, DisconnectClientFn, FindAllClientsFn, FindClientByIdFn, FreeFn, FreeQrBufferFn, GetButtonInStateFn, GetQrCodeRenderedFn, IsRunningFn, NotifyScreenshotFn, RegisterEventCallbackFn, RegisterSensorEventCallbackFn, StartSuduxuFn, StopSuduxuFn, TickFn, UnicastFn, VersionFn};
+use crate::api::handler::types::{AddressesFn, BroadcastFn, ConfigFn, DisconnectAllFn, DisconnectClientFn, FindAllClientsFn, FindClientByIdFn, SuduxuFreeFn, FreeQrBufferFn, GetButtonInStateFn, GetQrCodeRenderedFn, IsRunningFn, NotifyScreenshotFn, RegisterEventCallbackFn, RegisterSensorEventCallbackFn, StartSuduxuFn, StopSuduxuFn, TickFn, UnicastFn, VersionFn};
 use crate::data::config::SuduxuBehaviourConfiguration;
 
 static SUDUXU_RAW: OnceLock<Arc<SuduxuRaw>> = OnceLock::new();
@@ -27,7 +27,7 @@ pub struct SuduxuRaw {
     pub config: ConfigFn,
     pub addresses: AddressesFn,
 
-    pub free: FreeFn,
+    pub suduxu_free: SuduxuFreeFn,
 
     pub register_sensor_event_callback: RegisterSensorEventCallbackFn,
     pub register_event_callback: RegisterEventCallbackFn,
@@ -68,7 +68,7 @@ impl SuduxuRaw {
                 config: *lib.get(b"config")?,
                 addresses: *lib.get(b"addresses")?,
 
-                free: *lib.get(b"free")?,
+                suduxu_free: *lib.get(b"suduxu_free")?,
 
                 register_sensor_event_callback: *lib.get(b"register_sensor_event_callback")?,
                 register_event_callback: *lib.get(b"register_event_callback")?,

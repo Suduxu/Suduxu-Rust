@@ -13,7 +13,7 @@ use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
-use crate::data::qr::{QrCode, QrResult};
+use crate::data::qr::QrCode;
 
 // ------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------

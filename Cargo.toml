@@ -1,6 +1,6 @@
 [package]
 name = "suduxu_rust"
-version = "1.0.0"
+version = "1.0.0-hotfix"
 edition = "2024"
 license = "MIT"
 description = "A Rust-API for Suduxu-ABI. This crate is used to interact with the Suduxu-ABI and provides a safe and ergonomic interface for Rust developers."

@@ -10,7 +10,6 @@ repository = "https://github.com/Suduxu/Suduxu-Rust"
 keywords = ["suduxu", "contoller", "api", "themes", "sensor"]
 exclude = [
     "/DLL/**",
-    "/README.md",
     "/LICENSE",
 ]
 

@@ -57,6 +57,13 @@ impl SuduxuClient {
         ));
     }
 
+    pub fn file(&self, file_name: &str) {
+        self.send(Payload::new(
+            format!("{ADAPTER_PREFIX}File"),
+            serde_json::to_value(file_name).unwrap()
+        ));
+    }
+
     fn send(&self, payload: Payload) {
         unsafe {
             let json = serde_json::to_string(&payload).unwrap();

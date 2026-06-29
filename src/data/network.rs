@@ -64,6 +64,17 @@ pub struct SendSensorData {
     pub enabled: bool,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct FileTransferObject {
+    pub name: String,
+}
+
+impl FileTransferObject {
+    pub fn new(name: String) -> Self {
+        FileTransferObject { name }
+    }
+}
+
 impl SendSensorData {
     pub fn new(enabled: bool) -> Self {
         SendSensorData { enabled }

@@ -1,5 +1,18 @@
 use serde::{Serialize, Deserialize};
 
+/// Represents the type of button input received from a device.
+/// 
+/// # Values
+/// * `Up`
+/// * `Down`
+/// * `Left`
+/// * `Right`
+/// * `A`
+/// * `One`
+/// * `Two`
+/// * `Screenshot`
+/// * `Plus`
+/// * `Minus`
 #[repr(C)]
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, Hash, PartialEq)]
 pub enum ButtonInputType {
@@ -16,6 +29,13 @@ pub enum ButtonInputType {
     Minus,
 }
 
+/// Represents the state of a button input received from a device.
+/// 
+/// # Values
+/// * `Down`
+/// * `Pressed`
+/// * `Up`
+/// * `Cancel`
 #[repr(C)]
 #[derive(Debug, Serialize, Deserialize, Copy, PartialEq, Eq, Clone)]
 pub enum ButtonInputState {
@@ -26,6 +46,7 @@ pub enum ButtonInputState {
     Cancel
 }
 
+/// Represents a button input received from a device.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ButtonInput {
     pub mocked: bool,
@@ -33,6 +54,9 @@ pub struct ButtonInput {
     pub state: ButtonInputState,
 }
 
+/// Represents raw sensor data received from a device.
+/// 
+/// Note: `SensorDataRaw` also incoorporates the field `id` which is the client id of the device that sent the data, and `mocked` which indicates if the data is mocked or not (with `mocked == 0` being true and `mocked == 1` being false).
 #[repr(C)]
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub struct SensorDataRaw {
@@ -59,6 +83,7 @@ pub struct SensorDataRaw {
     pub light: f32,
 }
 
+/// Represents joystick data received from a device.
 #[derive(Debug, Clone, Deserialize)]
 pub struct JoystickData {
     pub x: f32,

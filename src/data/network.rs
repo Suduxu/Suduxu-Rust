@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+/// Represents a payload with an optional ID, name, and associated values.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Payload {
     #[serde(default)]

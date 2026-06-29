@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
+/// Represents a log entry with a level, message, and timestamp.
 #[derive(Clone, Deserialize)]
 pub struct Log {
     pub level: LogLevel,
@@ -34,6 +35,13 @@ impl Display for Log {
     }
 }
 
+/// Represents the severity level of a log entry.
+/// 
+/// # Values
+/// * `Debug`: Detailed information, typically of interest only when diagnosing problems.
+/// * `Info`: Confirmation that things are working as expected.
+/// * `Warn`: An indication that something unexpected happened, or indicative of some problem in the near future (e.g., ‘disk space low’). The software is still working as expected.
+/// * `Error`: Due to a more serious problem, the software has not been able to perform some function.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum LogLevel {
     Debug,
@@ -48,6 +56,7 @@ impl Display for LogLevel {
     }
 }
 
+/// Represents a log object that can be sent to clients, containing an optional title, a message, and a log level.
 #[derive(Serialize, Deserialize)]
 pub struct LogObject {
     #[serde(skip_serializing_if = "Option::is_none")]

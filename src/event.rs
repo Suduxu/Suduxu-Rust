@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 
 type Subscriber<T> = Arc<dyn Fn(T) + Send + Sync>;
 
+/// A simple event bus that allows subscribers to listen for events of type `T`.
 #[derive(Clone)]
 pub struct EventBus<T>
 where
@@ -19,6 +20,14 @@ impl<T: Clone> EventBus<T> {
         }
     }
 
+    /// Subscribes a callback function to the event bus.
+    /// The callback will be called whenever an event of type `T` is published.
+    ///
+    /// # Arguments
+    /// * `callback` - A function that takes an event of type `T` and returns nothing.
+    ///
+    /// # Usage
+    /// `event_bus.subscribe(|event| { /* handle event */ });`
     pub fn subscribe<F>(&self, callback: F)
     where
         F: Fn(T) + Send + Sync + 'static,
@@ -27,6 +36,13 @@ impl<T: Clone> EventBus<T> {
         subs.push(Arc::new(callback));
     }
 
+    /// Publishes an event to all subscribers.
+    ///
+    /// # Arguments
+    /// * `event` - The event of type `T` to be published.
+    ///
+    /// # Usage
+    /// `event_bus.publish(event);`
     pub fn publish(&self, event: T) {
         let callbacks = {
             let subs = self.subscribers.lock().unwrap();
@@ -38,10 +54,12 @@ impl<T: Clone> EventBus<T> {
         }
     }
 
+    /// Clears all subscribers from the event bus.
     pub fn clear_subscribers(&self) {
         self.subscribers.lock().unwrap().clear();
     }
 
+    /// Returns the number of subscribers currently registered to the event bus.
     pub fn subscriber_count(&self) -> usize {
         self.subscribers.lock().unwrap().len()
     }

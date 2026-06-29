@@ -3,16 +3,32 @@ use serde::{Deserialize, Serialize};
 use crate::data::log::LogLevel;
 use crate::utils::get_dll_path;
 
+/// Represents the configuration for the SuduxuBehaviour, including the path to the DLL and the default ID.
 pub struct SuduxuBehaviourConfiguration {
     pub dll_path: PathBuf,
     pub default_id: u16,
 }
 
 impl SuduxuBehaviourConfiguration {
+    /// Creates a new SuduxuBehaviourConfiguration with the specified DLL path and default ID.
+    ///
+    /// # Arguments
+    /// * `dll_path` - The path to the DLL file. (If the path does not contain a file extension, it will be automatically appended based on the operating system.)
+    /// * `default_id` - The default ID to be used.
+    ///
+    /// # Returns
+    /// A new instance of SuduxuBehaviourConfiguration.
     pub fn new(dll_path: impl Into<PathBuf>, default_id: u16) -> Self {
         Self { dll_path: dll_path.into(), default_id }
     }
 
+    /// Creates a new SuduxuBehaviourConfiguration for broadcasting, with the specified DLL path and a default ID of 0 (broadcast).
+    ///
+    /// # Arguments
+    /// * `dll_path` - The path to the DLL file. (If the path does not contain a file extension, it will be automatically appended based on the operating system.)
+    ///
+    /// # Returns
+    /// A new instance of SuduxuBehaviourConfiguration configured for broadcasting.
     pub fn broadcast(dll_path: impl Into<PathBuf>) -> Self {
         Self { dll_path: dll_path.into(), default_id: 0 }
     }
@@ -24,6 +40,7 @@ impl Default for SuduxuBehaviourConfiguration {
     }
 }
 
+/// Represents the configuration for the Suduxu server, including server settings, logging, security, file sharing, devices, screen capture, sensors, developer options, and health checks.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct SuduxuConfig {
     pub server: Server,
@@ -38,6 +55,10 @@ pub struct SuduxuConfig {
 }
 
 impl Default for SuduxuConfig {
+    /// Creates a default configuration for the Suduxu server with predefined settings for server, logging, security, file sharing, devices, screen capture, sensors, developer options, and health checks.
+    ///
+    /// # Returns
+    /// A new instance of SuduxuConfig with default settings.
     fn default() -> Self {
         SuduxuConfig {
             server: Server {
@@ -117,6 +138,7 @@ impl Default for SuduxuConfig {
     }
 }
 
+/// Represents the server configuration, including address, ports, connection strategy, and rate limiting.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Server {
     pub address: String,
@@ -129,6 +151,7 @@ pub struct Server {
     pub rate_limit: RateLimit,
 }
 
+/// Represents the logging configuration, including debug level, log file path, maximum log size, and whether to log to console.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Logging {
     pub debug_level: LogLevel,
@@ -137,12 +160,14 @@ pub struct Logging {
     pub log_to_console: bool,
 }
 
+/// Represents the security configuration, including whether security is enabled and an optional password.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Security {
     pub enabled: bool,
     pub password: Option<u32>
 }
 
+/// Represents the file sharing configuration, including whether file sharing is enabled, the shared directory, a list of shared files, and initially loaded files.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct FileSharing {
     pub enabled: bool,
@@ -151,6 +176,7 @@ pub struct FileSharing {
     pub initially_loaded: Option<Vec<String>>
 }
 
+/// Represents the devices configuration, including whether to initially send sensor data, the maximum number of devices, allowed device types, and the initial frame rate.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Devices {
     pub initially_send_sensor_data: bool,
@@ -159,6 +185,7 @@ pub struct Devices {
     pub initial_frame_rate: u16,
 }
 
+/// Represents the screen capture configuration, including whether screen capture is enabled, whether to capture on the server, and an optional capture directory.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ScreenCapture {
     pub enabled: bool,
@@ -166,6 +193,7 @@ pub struct ScreenCapture {
     pub capture_directory: Option<String>,
 }
 
+/// Represents the sensors configuration, including whether each type of sensor is enabled or disabled.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Sensors {
     pub accelerometer: bool,
@@ -177,6 +205,7 @@ pub struct Sensors {
     pub light: bool,
 }
 
+/// Represents the developer configuration, including whether to prefer CLI, allow mocked sensors, and allow mocked buttons.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Developer {
     pub prefer_cli: bool,
@@ -184,12 +213,19 @@ pub struct Developer {
     pub allow_mocked_buttons: bool,
 }
 
+/// Represents the health check configuration, including server and client health check settings.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct HealthCheck {
     pub server: HealthCheckConfig,
     pub client: HealthCheckConfig,
 }
 
+/// Represents the connection strategy for the server, including whitelist, blacklist, open, and invalid options.
+///
+/// Values:
+/// * `Whitelist` - Only allow connections from clients in the whitelist.
+/// * `Blacklist` - Allow connections from all clients except those in the blacklist.
+/// * `Open` - Allow connections from all clients.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum ConnectionStrategy {
     Whitelist,
@@ -199,12 +235,14 @@ pub enum ConnectionStrategy {
     Invalid
 }
 
+/// Represents the rate limiting configuration, including whether rate limiting is enabled and the maximum number of TCP requests per minute.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct RateLimit {
     pub enabled: bool,
     pub max_tcp_requests_per_minute: Option<u16>,
 }
 
+/// Represents the operating system type of device, including Android, iOS, Windows, Linux, macOS, unknown, and other options.
 #[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq)]
 pub enum OsType {
     Android,
@@ -219,6 +257,7 @@ pub enum OsType {
     Other,
 }
 
+/// Represents the health status of the server, including healthy, unhealthy, and unknown options.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct HealthCheckConfig {
     pub enabled: bool,
@@ -226,6 +265,7 @@ pub struct HealthCheckConfig {
     pub timeout_ms: Option<u64>,
 }
 
+/// Represents a shared file, including its name, path, type, and optional theme constraints.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct SharedFile {
     pub name: String,
@@ -235,6 +275,7 @@ pub struct SharedFile {
     pub theme_constraints: Option<ThemeConstraints>
 }
 
+/// Represents the type of shared file, including audio, Lua theme, XML theme, screenshot, and invalid options.
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Copy)]
 pub enum SharedFileType {
     Audio,
@@ -250,6 +291,7 @@ pub enum SharedFileType {
     Invalid
 }
 
+/// Represents the theme constraints for a shared file, including optional maximum and minimum width.
 #[derive(Deserialize , Serialize, Debug, Clone)]
 pub struct ThemeConstraints {
     pub max_width: Option<u16>,

@@ -1,3 +1,13 @@
+/// This file contains the status codes for the FFI interface.
+/// 
+/// # Values
+/// * InvalidJson: The provided JSON is invalid.
+/// * NetworkError: There was a network error.
+/// * NotRunning: The server is not running.
+/// * AlreadyRunning: The server is already running.
+/// * InternalError: An internal error occurred.
+/// * ClientNotFound: The specified client was not found.
+/// * InvalidInput: The provided input is invalid.
 #[repr(i32)]
 #[derive(Copy, Clone, Debug)]
 pub enum FFIError {

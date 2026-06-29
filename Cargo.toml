@@ -6,6 +6,8 @@ license = "MIT"
 description = "A Rust-API for Suduxu-ABI. This crate is used to interact with the Suduxu-ABI and provides a safe and ergonomic interface for Rust developers."
 homepage = "https://suduxu.com"
 readme = "README.md"
+repository = "https://github.com/Suduxu/Suduxu-Rust"
+keywords = ["suduxu", "contoller", "api", "themes", "sensor"]
 exclude = [
     "/DLL/**"
 ]
